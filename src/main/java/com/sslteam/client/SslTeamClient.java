@@ -30,6 +30,7 @@ import com.sslteam.cert.api.contract.root.RootRetireResponse;
 import com.sslteam.cert.api.contract.root.RootRevokeRequest;
 import com.sslteam.cert.api.contract.root.RootRevokeResponse;
 import com.sslteam.cert.api.contract.scope.PkiScope;
+import com.sslteam.client.tls.persistence.TlsTrustProfileStore;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -60,10 +61,12 @@ public class SslTeamClient {
     private final ObjectMapper mapper;
 
     /**
-     * Creates a client using the platform trust store and JDK HTTPS hostname verification.
+     * Creates a client with reusable origin-scoped SYSTEM, TOFU, and trust-store TLS policy.
+     *
+     * @param profileStore caller-owned persistence for validated public TLS profiles
      */
-    public SslTeamClient() {
-        this(new SslTeamTransport(Duration.ofSeconds(4)));
+    public SslTeamClient(TlsTrustProfileStore profileStore) {
+        this(new SslTeamTlsTransport(profileStore));
     }
 
     /**
@@ -111,19 +114,29 @@ public class SslTeamClient {
         return sendJson(request, AuthTokenResponse.class);
     }
 
-        public AuthTokenResponse login(String baseUrl, String username, String password) {
+    /**
+     * Issues a CLI-channel access token using the server's username/password token endpoint.
+     *
+     * @param baseUrl HTTPS server origin, or HTTP localhost for local development
+     * @param username operator username
+     * @param password operator password; never logged or persisted by this client
+     * @return token response for caller-owned secure session handling
+     * @throws SslTeamHttpException when the server rejects authentication
+     * @throws SslTeamUnavailableException when the server remains unavailable
+     */
+    public AuthTokenResponse login(String baseUrl, String username, String password) {
         URI baseUri = requireBaseUri(baseUrl);
         return sendJson(jsonPost(endpoint(baseUri, "/api/v1/auth/token"),
             new AuthTokenRequest(username, password, "CLI"), null), AuthTokenResponse.class);
-        }
+    }
 
-        public DeviceAuthorizationStartResponse startDeviceAuthorization(String baseUrl, String clientId, String scope) {
+    public DeviceAuthorizationStartResponse startDeviceAuthorization(String baseUrl, String clientId, String scope) {
         URI baseUri = requireBaseUri(baseUrl);
         String body = "client_id=" + urlEncode(clientId)
             + (scope == null || scope.isBlank() ? "" : "&scope=" + urlEncode(scope));
         return sendJson(formPost(endpoint(baseUri, "/oauth/device_authorization"), body),
             DeviceAuthorizationStartResponse.class);
-        }
+    }
 
         public DeviceTokenPollResult exchangeDeviceCode(String baseUrl, String clientId, String deviceCode) {
         URI baseUri = requireBaseUri(baseUrl);
