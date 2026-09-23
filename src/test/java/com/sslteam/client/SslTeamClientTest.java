@@ -1,5 +1,6 @@
 package com.sslteam.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,6 +19,14 @@ import javax.net.ssl.SSLSession;
 import org.junit.jupiter.api.Test;
 
 class SslTeamClientTest {
+
+    @Test
+    void tokenRequestUsesServerChannelProperty() throws Exception {
+        String json = new ObjectMapper().writeValueAsString(
+                new AuthTokenRequest("operator", "password", "CLI"));
+
+        assertEquals("{\"username\":\"operator\",\"password\":\"password\",\"channel\":\"CLI\"}", json);
+    }
 
     @Test
     void pingBuildsAuthenticatedVersionedEndpointAndCorrelationHeader() {
