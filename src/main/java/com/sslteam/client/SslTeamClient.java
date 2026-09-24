@@ -109,7 +109,7 @@ public class SslTeamClient {
         URI baseUri = requireBaseUri(baseUrl);
         HttpRequest request = jsonPost(
                 endpoint(baseUri, "/api/v1/auth/refresh"),
-                new RefreshPayload(refreshToken),
+            new AuthRefreshRequest(refreshToken),
                 null);
         return sendJson(request, AuthTokenResponse.class);
     }
@@ -159,7 +159,7 @@ public class SslTeamClient {
         public void logout(String baseUrl, String accessToken, String refreshToken) {
         URI baseUri = requireBaseUri(baseUrl);
         sendNoContent(jsonPost(endpoint(baseUri, "/api/v1/auth/logout"),
-            new LogoutPayload(refreshToken), accessToken));
+                new AuthRefreshRequest(refreshToken), accessToken));
         }
 
         public void logoutAll(String baseUrl, String accessToken) {
@@ -609,9 +609,4 @@ public class SslTeamClient {
         }
     }
 
-    private record LogoutPayload(String refreshToken) {
-    }
-
-    private record RefreshPayload(String refreshToken) {
-    }
 }

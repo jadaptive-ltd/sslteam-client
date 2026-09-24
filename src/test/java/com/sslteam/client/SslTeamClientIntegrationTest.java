@@ -19,6 +19,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -26,8 +27,10 @@ import org.junit.jupiter.api.Test;
  *
  * <p>The transport deliberately trusts the configured test server's self-signed certificate and
  * disables hostname identification only for this test. Production callers must use normal
- * certificate and hostname verification or an explicit trust profile.</p>
+ * certificate and hostname verification or an explicit trust profile. Run this live test only
+ * with {@code -Dsslteam.client.integration=true} against the configured test server.</p>
  */
+@EnabledIfSystemProperty(named = "sslteam.client.integration", matches = "true")
 class SslTeamClientIntegrationTest {
 
     @Test
