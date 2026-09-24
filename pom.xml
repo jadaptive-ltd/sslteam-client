@@ -3,44 +3,74 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>com.sslteam</groupId>
-    <artifactId>services</artifactId>
-    <version>1.0.0</version>
-  </parent>
-
+  <groupId>com.sslteam</groupId>
   <artifactId>sslteam-client</artifactId>
+  <version>1.0.0</version>
   <name>SSLTeam Server Client API</name>
   <description>Framework-neutral Java 25 API for interacting with an SSLTeam server</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>25</maven.compiler.release>
+    <sslteam-contracts.version>1.0.0</sslteam-contracts.version>
+    <jackson.version>2.21.2</jackson.version>
+    <junit.version>5.13.4</junit.version>
+    <bouncycastle.version>1.84</bouncycastle.version>
+    <compiler-plugin.version>3.13.0</compiler-plugin.version>
+    <surefire-plugin.version>3.5.2</surefire-plugin.version>
+  </properties>
 
   <dependencies>
     <dependency>
       <groupId>com.sslteam</groupId>
-      <artifactId>cert-core</artifactId>
-      <version>${project.version}</version>
+      <artifactId>sslteam-contracts</artifactId>
+      <version>${sslteam-contracts.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bouncycastle.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler-plugin.version}</version>
+        <configuration>
+          <release>${maven.compiler.release}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire-plugin.version}</version>
+      </plugin>
+    </plugins>
+  </build>
 </project>
