@@ -12,7 +12,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>25</maven.compiler.release>
-    <sslteam-contracts.version>1.0.0</sslteam-contracts.version>
+    <sslteam-api.version>1.0.0</sslteam-api.version>
     <jackson.version>2.21.2</jackson.version>
     <junit.version>5.13.4</junit.version>
     <bouncycastle.version>1.84</bouncycastle.version>
@@ -23,8 +23,8 @@
   <dependencies>
     <dependency>
       <groupId>com.sslteam</groupId>
-      <artifactId>sslteam-contracts</artifactId>
-      <version>${sslteam-contracts.version}</version>
+      <artifactId>sslteam-api</artifactId>
+      <version>${sslteam-api.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
