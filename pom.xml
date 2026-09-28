@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.sslteam</groupId>
+  <groupId>com.jadaptive</groupId>
   <artifactId>sslteam-client</artifactId>
   <version>1.0.0</version>
-  <name>SSLTeam Server Client API</name>
-  <description>Framework-neutral Java 25 API for interacting with an SSLTeam server</description>
+  <name>SSLTeam Java Client</name>
+  <description>Reusable Java client for authenticated SSLTeam API and TLS interactions</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,7 +22,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.sslteam</groupId>
+      <groupId>com.jadaptive</groupId>
       <artifactId>sslteam-api</artifactId>
       <version>${sslteam-api.version}</version>
     </dependency>
