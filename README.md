@@ -137,3 +137,10 @@ hosts the snapshot and resolve the matching `sslteam-api` version transitively:
 
 - [`sslteam-api`](https://github.com/jadaptive-ltd/sslteam-api): shared Java API contracts
 - [SSLTeam organization](https://github.com/jadaptive-ltd): project source and issue tracking
+
+## License
+
+Copyright (C) 2026 Jadaptive Limited.
+
+This project is licensed under the Apache License, Version 2.0. See the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) for details.
