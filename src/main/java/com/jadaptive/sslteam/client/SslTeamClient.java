@@ -23,6 +23,13 @@ package com.jadaptive.sslteam.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.jadaptive.sslteam.auth.api.AssignUserRoleRequest;
+import com.jadaptive.sslteam.auth.api.CurrentUserResponse;
+import com.jadaptive.sslteam.auth.api.CreateUserRequest;
+import com.jadaptive.sslteam.auth.api.DeleteUserRequest;
+import com.jadaptive.sslteam.auth.api.OneTimeCredentialIssueResponse;
+import com.jadaptive.sslteam.auth.api.UpdateUserRequest;
+import com.jadaptive.sslteam.auth.api.UserAccountResponse;
 import com.jadaptive.sslteam.cert.api.audit.CertificateAuditEntry;
 import com.jadaptive.sslteam.cert.api.contract.intermediate.IntermediateCurrentResponse;
 import com.jadaptive.sslteam.cert.api.contract.intermediate.IntermediateHistoryResponse;
@@ -114,6 +121,44 @@ public class SslTeamClient {
                 .GET()
                 .build();
         return sendJson(request, PingResponse.class);
+    }
+
+    public CurrentUserResponse currentUser(String baseUrl, String accessToken) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(get(baseUrl, "/api/v1/auth/me", accessToken), CurrentUserResponse.class);
+    }
+
+    public List<UserAccountResponse> listUsers(String baseUrl, String accessToken) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(get(baseUrl, "/api/v1/users", accessToken),
+                mapper.getTypeFactory().constructCollectionType(List.class, UserAccountResponse.class));
+    }
+
+    public OneTimeCredentialIssueResponse createUser(
+            String baseUrl, String accessToken, CreateUserRequest payload) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(jsonPost(endpoint(baseUri, "/api/v1/users"), payload, accessToken),
+                OneTimeCredentialIssueResponse.class);
+    }
+
+    public UserAccountResponse updateUser(
+            String baseUrl, String accessToken, UUID userId, UpdateUserRequest payload) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(jsonRequest("PUT", endpoint(baseUri, "/api/v1/users/" + userId), payload, accessToken),
+                UserAccountResponse.class);
+    }
+
+    public UserAccountResponse assignUserRole(
+            String baseUrl, String accessToken, UUID userId, AssignUserRoleRequest payload) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(jsonRequest("PUT", endpoint(baseUri, "/api/v1/users/" + userId + "/role"), payload, accessToken),
+                UserAccountResponse.class);
+    }
+
+    public void deleteUser(
+            String baseUrl, String accessToken, UUID userId, DeleteUserRequest payload) {
+        URI baseUri = requireBaseUri(baseUrl);
+        sendNoContent(jsonRequest("DELETE", endpoint(baseUri, "/api/v1/users/" + userId), payload, accessToken));
     }
 
     /**
@@ -521,6 +566,10 @@ public class SslTeamClient {
     }
 
     private HttpRequest jsonPost(String url, Object payload, String accessToken) {
+        return jsonRequest("POST", url, payload, accessToken);
+    }
+
+    private HttpRequest jsonRequest(String method, String url, Object payload, String accessToken) {
         String body;
         try {
             body = mapper.writeValueAsString(payload);
@@ -532,7 +581,7 @@ public class SslTeamClient {
                 .timeout(REQUEST_TIMEOUT)
                 .header("Content-Type", "application/json")
                 .header(CORRELATION_HEADER, UUID.randomUUID().toString())
-                .POST(HttpRequest.BodyPublishers.ofString(body));
+                .method(method, HttpRequest.BodyPublishers.ofString(body));
         if (accessToken != null && !accessToken.isBlank()) {
             builder.header("Authorization", "Bearer " + accessToken);
         }
