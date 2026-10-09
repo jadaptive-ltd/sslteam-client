@@ -20,5 +20,9 @@ package com.jadaptive.sslteam.client;
  * #L%
  */
 
-public record JwtVerifierPublicKeyResponse(String algorithm, String publicKeyPem) {
+public record JwtVerifierPublicKeyResponse(String algorithm, String publicKeyPem, String issuer, String audience) {
+
+	public JwtVerifierPublicKeyResponse(String algorithm, String publicKeyPem) {
+		this(algorithm, publicKeyPem, null, null);
+	}
 }
