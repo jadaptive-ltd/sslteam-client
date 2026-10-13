@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -489,8 +490,11 @@ public class SslTeamClient {
 
     private static void ensureSuccessful(HttpRequest request, HttpResponse<?> response) {
         if (response.statusCode() >= 400) {
+            String body = response.body() instanceof byte[] bytes
+                ? new String(bytes, StandardCharsets.UTF_8)
+                : null;
             throw new SslTeamHttpException(request.method(), request.uri().toString(), response.statusCode(),
-                    correlationId(response), null, null);
+                correlationId(response), errorCode(body), errorMessage(body));
         }
     }
 

@@ -90,15 +90,19 @@ class SslTeamClientTest {
 
     @Test
     void mapsServerRejectionToBoundedTypedFailure() {
-        RecordingTransport transport = new RecordingTransport(response(401, "{\"token\":\"secret\"}", Map.of()));
+        RecordingTransport transport = new RecordingTransport(response(403,
+            "{\"code\":\"SCOPE_DENIED\",\"message\":\"You are authenticated, but you are not authorized.\"}",
+            Map.of("X-SSL-Teams-Correlation-Id", List.of("server-correlation-1"))));
         SslTeamClient client = new SslTeamClient(transport);
 
         SslTeamHttpException exception = assertThrows(
                 SslTeamHttpException.class,
                 () -> client.ping("https://sslteam.example", "access-token"));
 
-        assertEquals(401, exception.statusCode());
-        assertTrue(exception.getMessage().contains("401"));
+        assertEquals(403, exception.statusCode());
+        assertEquals("SCOPE_DENIED", exception.errorCode());
+        assertEquals("You are authenticated, but you are not authorized.", exception.serverMessage());
+        assertEquals("server-correlation-1", exception.correlationId());
         assertTrue(!exception.getMessage().contains("secret"));
     }
 
