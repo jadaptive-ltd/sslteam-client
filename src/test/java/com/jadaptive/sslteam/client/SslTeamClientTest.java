@@ -21,6 +21,7 @@ package com.jadaptive.sslteam.client;
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jadaptive.sslteam.auth.api.OneTimeCredentialIssueResponse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -62,6 +63,27 @@ class SslTeamClientTest {
         assertEquals("Bearer access-token", transport.request.headers().firstValue("Authorization").orElseThrow());
         assertTrue(transport.request.headers().firstValue("X-SSL-Teams-Correlation-Id").isPresent());
     }
+
+        @Test
+        void resetUserCredentialUsesEmptyAuthenticatedPost() {
+        RecordingTransport transport = new RecordingTransport(response(200,
+            "{\"userId\":\"00000000-0000-0000-0000-000000000001\",\"username\":\"alice\","
+                + "\"credentialState\":\"RESET\",\"oneTimeCredential\":\"temporary\","
+                + "\"credentialIssuedAt\":\"2026-01-01T00:00:00Z\","
+                + "\"credentialExpiresAt\":\"2026-01-01T01:00:00Z\","
+                + "\"passwordChangeRequired\":true}", Map.of()));
+        SslTeamClient client = new SslTeamClient(transport);
+
+        OneTimeCredentialIssueResponse response = client.resetUserCredential(
+            "http://localhost:15080", "access-token", "alice@example");
+
+        assertEquals("alice", response.username());
+        assertEquals("POST", transport.request.method());
+        assertEquals("http://localhost:15080/api/v1/users/alice%40example/credentials/reset",
+            transport.request.uri().toString());
+        assertEquals(0, transport.request.bodyPublisher().orElseThrow().contentLength());
+        assertEquals("Bearer access-token", transport.request.headers().firstValue("Authorization").orElseThrow());
+        }
 
     @Test
     void refreshUsesOneNonIdempotentAttemptAndDoesNotLogOrExposeToken() {

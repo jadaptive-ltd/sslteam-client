@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jadaptive.sslteam.auth.api.AssignUserRoleRequest;
+import com.jadaptive.sslteam.auth.api.CredentialStateViewResponse;
 import com.jadaptive.sslteam.auth.api.CurrentUserResponse;
 import com.jadaptive.sslteam.auth.api.CreateUserRequest;
 import com.jadaptive.sslteam.auth.api.DeleteUserRequest;
@@ -125,12 +126,12 @@ public class SslTeamClient {
     }
 
     public CurrentUserResponse currentUser(String baseUrl, String accessToken) {
-        URI baseUri = requireBaseUri(baseUrl);
+        requireBaseUri(baseUrl);
         return sendJson(get(baseUrl, "/api/v1/auth/me", accessToken), CurrentUserResponse.class);
     }
 
     public List<UserAccountResponse> listUsers(String baseUrl, String accessToken) {
-        URI baseUri = requireBaseUri(baseUrl);
+        requireBaseUri(baseUrl);
         return sendJson(get(baseUrl, "/api/v1/users", accessToken),
                 mapper.getTypeFactory().constructCollectionType(List.class, UserAccountResponse.class));
     }
@@ -140,6 +141,26 @@ public class SslTeamClient {
         URI baseUri = requireBaseUri(baseUrl);
         return sendJson(jsonPost(endpoint(baseUri, "/api/v1/users"), payload, accessToken),
                 OneTimeCredentialIssueResponse.class);
+    }
+
+    public OneTimeCredentialIssueResponse resetUserCredential(
+            String baseUrl, String accessToken, String username) {
+        URI baseUri = requireBaseUri(baseUrl);
+        HttpRequest request = authorizedRequest(endpoint(baseUri, "/api/v1/users/"
+                + urlEncode(username) + "/credentials/reset"), accessToken)
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.noBody())
+            .build();
+        return sendJson(request,
+                OneTimeCredentialIssueResponse.class);
+    }
+
+    public CredentialStateViewResponse getUserCredentialState(
+            String baseUrl, String accessToken, String username) {
+        URI baseUri = requireBaseUri(baseUrl);
+        return sendJson(get(baseUri.toString(), "/api/v1/users/"
+                + urlEncode(username) + "/credentials/state", accessToken),
+                CredentialStateViewResponse.class);
     }
 
     public UserAccountResponse updateUser(
