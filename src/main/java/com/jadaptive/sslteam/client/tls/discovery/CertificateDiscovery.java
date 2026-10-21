@@ -52,8 +52,6 @@ public final class CertificateDiscovery {
 
     /**
      * Creates discovery with the configured bounded TLS handshake timeout.
-     *
-     * @param handshakeTimeout maximum time allowed for socket connect and handshake
      */
     public CertificateDiscovery() {
         this(Duration.ofSeconds(5));

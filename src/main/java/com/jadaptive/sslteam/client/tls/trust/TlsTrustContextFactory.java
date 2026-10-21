@@ -55,8 +55,6 @@ public final class TlsTrustContextFactory {
 
     /**
      * Creates a factory using the standard public PEM loader.
-     *
-     * @return factory with no opened files or initialized network resources
      */
     public TlsTrustContextFactory() {
         this(new PublicCertificatePemLoader());

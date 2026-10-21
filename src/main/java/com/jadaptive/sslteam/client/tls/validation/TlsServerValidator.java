@@ -49,8 +49,6 @@ public final class TlsServerValidator {
 
     /**
      * Creates the validator with the configured bounded handshake timeout.
-     *
-     * @param handshakeTimeout ISO-8601 duration for connect and TLS handshake operations
      */
     public TlsServerValidator() {
         this(Duration.ofSeconds(5));

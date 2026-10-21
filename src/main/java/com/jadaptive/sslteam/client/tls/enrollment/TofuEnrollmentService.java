@@ -49,7 +49,7 @@ public final class TofuEnrollmentService {
      * Creates the enrollment coordinator from independent discovery and persistence boundaries.
      *
      * @param certificateDiscovery TLS-only, no-HTTP certificate discovery
-    * @param connectionStore atomic origin-scoped connection persistence
+    * @param profileStore atomic origin-scoped connection persistence
      */
     public TofuEnrollmentService(CertificateDiscovery certificateDiscovery, TlsTrustProfileStore profileStore) {
         this.certificateDiscovery = Objects.requireNonNull(certificateDiscovery, "certificateDiscovery");
