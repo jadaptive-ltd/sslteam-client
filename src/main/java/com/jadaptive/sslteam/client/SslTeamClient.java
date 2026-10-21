@@ -84,10 +84,12 @@ public class SslTeamClient {
     private static final String CORRELATION_HEADER = "X-SSL-Teams-Correlation-Id";
     private static final int MAX_IO_RETRIES = 3;
     private static final long RETRY_BACKOFF_MILLIS = 800L;
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration MIN_REQUEST_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration DEFAULT_REQUEST_TIMEOUT = Duration.ofSeconds(60);
 
     private final SslTeamHttpTransport transport;
     private final ObjectMapper mapper;
+    private final Duration requestTimeout;
 
     /**
      * Creates a client with reusable origin-scoped SYSTEM, TOFU, and trust-store TLS policy.
@@ -104,7 +106,24 @@ public class SslTeamClient {
      * @param transport transport that enforces the consumer's TLS and network policy
      */
     public SslTeamClient(SslTeamHttpTransport transport) {
+        this(transport, DEFAULT_REQUEST_TIMEOUT);
+    }
+
+    /**
+     * Creates a client using caller-owned transport and a common request timeout.
+     *
+     * @param transport transport that enforces the consumer's TLS and network policy
+     * @param requestTimeout maximum time allowed for each HTTP request
+     */
+    public SslTeamClient(SslTeamHttpTransport transport, Duration requestTimeout) {
         this.transport = Objects.requireNonNull(transport, "transport");
+        if (requestTimeout == null || requestTimeout.isZero() || requestTimeout.isNegative()) {
+            throw new IllegalArgumentException("requestTimeout must be positive");
+        }
+        if (requestTimeout.compareTo(MIN_REQUEST_TIMEOUT) < 0) {
+            throw new IllegalArgumentException("requestTimeout must be at least 10 seconds");
+        }
+        this.requestTimeout = requestTimeout;
         this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
@@ -527,14 +546,14 @@ public class SslTeamClient {
         return response.body();
     }
 
-    private static HttpRequest formPost(String url, String body) {
-        return HttpRequest.newBuilder().uri(URI.create(url)).timeout(REQUEST_TIMEOUT)
+    private HttpRequest formPost(String url, String body) {
+        return HttpRequest.newBuilder().uri(URI.create(url)).timeout(requestTimeout)
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .header(CORRELATION_HEADER, UUID.randomUUID().toString())
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
     }
 
-    private static HttpRequest get(String baseUrl, String path, String accessToken) {
+    private HttpRequest get(String baseUrl, String path, String accessToken) {
         URI baseUri = requireBaseUri(baseUrl);
         return authorizedRequest(endpoint(baseUri, path), accessToken).GET().build();
     }
@@ -603,7 +622,7 @@ public class SslTeamClient {
         }
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(REQUEST_TIMEOUT)
+            .timeout(requestTimeout)
                 .header("Content-Type", "application/json")
                 .header(CORRELATION_HEADER, UUID.randomUUID().toString())
                 .method(method, HttpRequest.BodyPublishers.ofString(body));
@@ -613,7 +632,7 @@ public class SslTeamClient {
         return builder.build();
     }
 
-    private static HttpRequest.Builder authorizedRequest(String url, String accessToken) {
+    private HttpRequest.Builder authorizedRequest(String url, String accessToken) {
         if (accessToken == null || accessToken.isBlank()) {
             throw new IllegalArgumentException("accessToken must not be blank");
         }
@@ -622,10 +641,10 @@ public class SslTeamClient {
                 .header("Authorization", "Bearer " + accessToken);
     }
 
-    private static HttpRequest.Builder unauthorizedRequest(String url) {
+    private HttpRequest.Builder unauthorizedRequest(String url) {
         return HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .timeout(REQUEST_TIMEOUT)
+                .timeout(requestTimeout)
                 .header(CORRELATION_HEADER, UUID.randomUUID().toString());
     }
 

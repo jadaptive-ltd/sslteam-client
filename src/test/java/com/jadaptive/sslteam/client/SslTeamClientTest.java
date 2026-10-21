@@ -32,6 +32,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -62,6 +63,28 @@ class SslTeamClientTest {
         assertEquals("http://localhost:15080/api/v1/auth/ping", transport.request.uri().toString());
         assertEquals("Bearer access-token", transport.request.headers().firstValue("Authorization").orElseThrow());
         assertTrue(transport.request.headers().firstValue("X-SSL-Teams-Correlation-Id").isPresent());
+    }
+
+    @Test
+    void appliesConfiguredRequestTimeout() {
+        RecordingTransport transport = new RecordingTransport(
+                response(200, "{\"message\":\"pong\"}", Map.of()));
+        SslTeamClient client = new SslTeamClient(transport, Duration.ofSeconds(75));
+
+        client.ping("http://localhost:15080", "access-token");
+
+        assertEquals(Duration.ofSeconds(75), transport.request.timeout().orElseThrow());
+    }
+
+    @Test
+    void rejectsRequestTimeoutBelowTenSeconds() {
+        RecordingTransport transport = new RecordingTransport(response(200, "{}", Map.of()));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new SslTeamClient(transport, Duration.ofSeconds(9)));
+
+        assertEquals("requestTimeout must be at least 10 seconds", exception.getMessage());
     }
 
         @Test

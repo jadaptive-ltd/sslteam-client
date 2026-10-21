@@ -28,6 +28,11 @@ The client also provides the protocol behavior around those operations:
 - HTTP response validation
 - retry classification for transient I/O failures
 
+Each request uses a 60-second timeout by default. Applications embedding the client can provide
+another timeout through the `SslTeamClient` constructor; values below 10 seconds are rejected.
+The CLI exposes the same setting through `SSLTEAM_CLIENT_REQUEST_TIMEOUT`, using duration values
+such as `120s` or `2m`.
+
 ## Using the client
 
 The client accepts a transport so an application can choose its own network and trust policy. The
