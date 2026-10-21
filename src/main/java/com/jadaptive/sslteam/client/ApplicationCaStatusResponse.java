@@ -31,7 +31,9 @@ public record ApplicationCaStatusResponse(
         int leafMaxValidityDays,
         long familyVersion,
         Instant rootNotBefore,
-        Instant rootNotAfter) {
+        Instant rootNotAfter,
+        Instant rootRetiredAt,
+        Instant rootRevokedAt) {
 
     public record Scope(String team, String environment) {
     }

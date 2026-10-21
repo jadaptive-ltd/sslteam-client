@@ -22,6 +22,7 @@ package com.jadaptive.sslteam.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jadaptive.sslteam.auth.api.OneTimeCredentialIssueResponse;
+import com.jadaptive.sslteam.cert.api.contract.scope.PkiScope;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -74,6 +75,25 @@ class SslTeamClientTest {
         client.ping("http://localhost:15080", "access-token");
 
         assertEquals(Duration.ofSeconds(75), transport.request.timeout().orElseThrow());
+    }
+
+    @Test
+    void applicationCaStatusAcceptsNullableRootLifecycleTimestamps() {
+        RecordingTransport transport = new RecordingTransport(response(200,
+                "{\"scope\":{\"team\":\"team-dev\",\"environment\":\"default\"},"
+                        + "\"familyStatus\":\"NOT_CONFIGURED\",\"setupState\":\"NOT_CONFIGURED\","
+                        + "\"applicationCaReady\":false,\"leafIssuanceReady\":false,"
+                        + "\"leafMaxValidityDays\":90,\"familyVersion\":0,"
+                        + "\"rootNotBefore\":null,\"rootNotAfter\":null,"
+                        + "\"rootRetiredAt\":null,\"rootRevokedAt\":null}", Map.of()));
+        SslTeamClient client = new SslTeamClient(transport);
+
+        ApplicationCaStatusResponse response = client.applicationCaStatus(
+                "http://localhost:15080", "access-token", new PkiScope("team-dev", "default"));
+
+        assertEquals("NOT_CONFIGURED", response.familyStatus());
+        assertEquals(null, response.rootRetiredAt());
+        assertEquals(null, response.rootRevokedAt());
     }
 
     @Test
