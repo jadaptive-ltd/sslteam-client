@@ -236,56 +236,58 @@ public class SslTeamClient {
             new AuthTokenRequest(username, password, "CLI"), null), AuthTokenResponse.class);
     }
 
-    public DeviceAuthorizationStartResponse startDeviceAuthorization(String baseUrl, String clientId, String scope) {
+    public DeviceAuthorizationStartResponse startDeviceAuthorization(
+            String baseUrl, String clientId, String scope) {
         URI baseUri = requireBaseUri(baseUrl);
         String body = "client_id=" + urlEncode(clientId)
-            + (scope == null || scope.isBlank() ? "" : "&scope=" + urlEncode(scope));
+                + (scope == null || scope.isBlank() ? "" : "&scope=" + urlEncode(scope));
         return sendJson(formPost(endpoint(baseUri, "/oauth/device_authorization"), body),
-            DeviceAuthorizationStartResponse.class);
+                DeviceAuthorizationStartResponse.class);
     }
 
-        public DeviceTokenPollResult exchangeDeviceCode(String baseUrl, String clientId, String deviceCode) {
+    public DeviceTokenPollResult exchangeDeviceCode(
+            String baseUrl, String clientId, String deviceCode) {
         URI baseUri = requireBaseUri(baseUrl);
         String body = "grant_type=" + urlEncode("urn:ietf:params:oauth:grant-type:device_code")
-            + "&device_code=" + urlEncode(deviceCode)
-            + "&client_id=" + urlEncode(clientId);
+                + "&device_code=" + urlEncode(deviceCode)
+                + "&client_id=" + urlEncode(clientId);
         HttpRequest request = formPost(endpoint(baseUri, "/oauth/token"), body);
         HttpResponse<String> response = send(request, HttpResponse.BodyHandlers.ofString());
         try {
             if (response.statusCode() < 400) {
-            return DeviceTokenPollResult.success(mapper.readValue(response.body(), AuthTokenResponse.class));
+                return DeviceTokenPollResult.success(mapper.readValue(response.body(), AuthTokenResponse.class));
             }
             return DeviceTokenPollResult.error(
-                mapper.readValue(response.body(), OAuthErrorResponse.class), response.statusCode());
+                    mapper.readValue(response.body(), OAuthErrorResponse.class), response.statusCode());
         } catch (IOException exception) {
             throw new SslTeamClientException("SSLTeam server returned an invalid device-flow response.", exception);
         }
-        }
+    }
 
-        public void logout(String baseUrl, String accessToken, String refreshToken) {
+    public void logout(String baseUrl, String accessToken, String refreshToken) {
         URI baseUri = requireBaseUri(baseUrl);
         sendNoContent(jsonPost(endpoint(baseUri, "/api/v1/auth/logout"),
                 new AuthRefreshRequest(refreshToken), accessToken));
-        }
+    }
 
-        public void logoutAll(String baseUrl, String accessToken) {
+    public void logoutAll(String baseUrl, String accessToken) {
         URI baseUri = requireBaseUri(baseUrl);
         sendNoContent(authorizedRequest(endpoint(baseUri, "/api/v1/auth/logout-all"), accessToken)
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.noBody())
-            .build());
-        }
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build());
+    }
 
-        public void changePassword(String baseUrl, String accessToken, AuthPasswordChangeRequest payload) {
+    public void changePassword(String baseUrl, String accessToken, AuthPasswordChangeRequest payload) {
         URI baseUri = requireBaseUri(baseUrl);
         sendNoContent(jsonPost(endpoint(baseUri, "/api/v1/auth/password/change"), payload, accessToken));
-        }
+    }
 
-        public JwtVerifierPublicKeyResponse fetchJwtVerifierPublicKey(String baseUrl) {
+    public JwtVerifierPublicKeyResponse fetchJwtVerifierPublicKey(String baseUrl) {
         URI baseUri = requireBaseUri(baseUrl);
         return sendJson(unauthorizedRequest(endpoint(baseUri, "/api/v1/auth/public-key"))
-            .GET().build(), JwtVerifierPublicKeyResponse.class);
-        }
+                .GET().build(), JwtVerifierPublicKeyResponse.class);
+    }
 
         public RootCaSetupResponse setupApplicationRoot(
             String baseUrl, String accessToken, PkiScope scope, String commonName,
